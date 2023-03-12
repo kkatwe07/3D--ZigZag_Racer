@@ -12,12 +12,16 @@ public class GameManager : MonoBehaviour
     public bool gameStarted;
 
     public GameObject platformSpawner;
-
     public GameObject GamePlayUI;
+    public GameObject MenuUI;
 
+    public AudioSource BgMusic;
+
+    public Text highscoreText;
     public Text scoreText;
 
     int score = 0;
+    int highScore;
 
     private void Awake()
     {
@@ -30,7 +34,9 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        highScore = PlayerPrefs.GetInt("HighScore");
+
+        highscoreText.text = "Best Score : " + highScore;
     }
 
     // Update is called once per frame
@@ -47,17 +53,21 @@ public class GameManager : MonoBehaviour
 
     public void GameStart()
     {
+        BgMusic.Play();
         gameStarted = true;
         platformSpawner.SetActive(true);
+        MenuUI.SetActive(false);
         GamePlayUI.SetActive(true);
-        StartCoroutine(UpdateScore());
+        StartCoroutine("UpdateScore");
     }
 
     public void GameOver()
     {
         platformSpawner.SetActive(false);
-
+        StopCoroutine("UpdateScore");
+        SaveHighScore();
         Invoke("ReloadLevel", 1f);
+        //DontDestroyOnLoad( BgMusic);
     }
 
     public void ReloadLevel()
@@ -74,6 +84,21 @@ public class GameManager : MonoBehaviour
             score++;
 
             scoreText.text = score.ToString();
+        }
+    }
+
+    public void SaveHighScore()
+    {
+        if (PlayerPrefs.HasKey("HighScore"))
+        {
+            if(score > PlayerPrefs.GetInt("HighScore"))
+            {
+                PlayerPrefs.SetInt("HighScore", score);
+            }
+        }
+        else
+        {
+            PlayerPrefs.SetInt("HighScore", score);
         }
     }
 }
